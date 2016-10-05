@@ -1,1 +1,1 @@
-This is Alfred, a chatbot personal assistant
+This is Alfred, your personal assistant

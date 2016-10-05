@@ -1,0 +1,23 @@
+{
+  "name": "alfred",
+  "version": "1.0.0",
+  "description": "a personal assistant bot",
+  "main": "server.js",
+  "scripts": {
+    "test": "https://github.com/aranga1/Alfred.git"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aranga1/Alfred.git"
+  },
+  "author": "Aakash Ranga <aakashranga@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aranga1/Alfred/issues"
+  },
+  "homepage": "https://github.com/aranga1/Alfred#readme",
+  "dependencies": {
+    "botbuilder": "^3.2.3",
+    "restify": "^4.1.1"
+  }
+}
