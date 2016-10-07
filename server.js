@@ -49,7 +49,7 @@ function sendTextMessage(sender, text) {
 	}, function(error, response, body) {
 		if (error) {
 			console.log('Error sending messages: ', error);
-		} eise if (response.body.error) {
+		} else if (response.body.error) {
 			console.log('Error: ', response.body.error);
 		}
 	});
