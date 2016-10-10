@@ -42,7 +42,7 @@ app.post('/webhook/', function(req, res) {
 		res.sendStatus(200);
 	}
 });
-const token = 'EAAZAxJnnArZAMBAEMdhKKxgvgINNmDxmKlCB0AdUVkvclPVvWXZB90ZAP4wDYRlD0gbmlOgEy6012uf0knYdfahDpTCGXdVduJpSimuyyuPBSZBz30VexooKle6oo6lXzRqsLtjMRq0fjsXZAfCJk029O9QSNlpAW4KvrPnwwqtwZDZD';
+const token = 'EAAZAxJnnArZAMBACyWFARPnpnB9xom3aKuaLTZCFuJMyCMVHZC806wCZCz7VXse8JqIAlUH5NYOZBtleV6gZBK4WIrd6MPO3eXFIkG2JZCUDeOF0o3TvJjZAiGjOxscxK54OEUp7HgV3qNZAbUikYyV20qZAfM7LPLlo5bP46A04Q0E8gZDZD';
 
 function sendTextMessage(sender, text) {
 	var messageData = {
