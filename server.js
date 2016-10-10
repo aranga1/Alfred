@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const request = require('request');
 const app = express();
 
-app.set('port', (process.env.PORT || 5000));
+app.set('port', (process.env.PORT || 8080));
 
 app.use(bodyParser.urlencoded({extended: false}));
 
@@ -17,45 +17,104 @@ app.get('/', function( req, res) {
 app.get('/webhook/', function (req, res) {
 	if (req.query['hub.verify_token'] === 'alfred') {
 		res.send(req.query['hub.challenge']);
-		res.send("This is the webhook");
 	}
 	res.send('Error, wrong token');
 });
 
 app.post('/webhook/', function(req, res) {
-	let messaging_events = req.body.entry[0].messaging;
-	for (i = 0; i < messaging_events.length; i++) {
-		let event = req.body.entry[0].messaging[i];
-		let sender = event.sender.id;
-		if (event.message && event.message.text) {
-			let text = event.message.text;
-			sendTextMessage(sender, "Text received, echo: " + text.substring(0,200));
-		}
+	console.log("Came to post From facebook");
+
+	var data = req.body;
+
+	if (data.object == 'page') {
+		data.entry.forEach(function(pageEntry) {
+			var pageIF = pageEntry.idl
+			var timeOfEvent = pageEntry.time;
+
+			pageEntry.messaging.forEach(function(messagingEvent) {
+				if (messagingEvent.message) {
+					receivedMessage(messagingEvent);
+				} else {
+					console.log("Webhook received messaging event which is not handled");
+				}
+			});
+		});
+		res.sendStatus(200);
 	}
-	res.sendStatus(200);
 });
-const token = process.env.FB_PAGE_ACCESS_TOKEN;
+const token = 'EAAZAxJnnArZAMBAEMdhKKxgvgINNmDxmKlCB0AdUVkvclPVvWXZB90ZAP4wDYRlD0gbmlOgEy6012uf0knYdfahDpTCGXdVduJpSimuyyuPBSZBz30VexooKle6oo6lXzRqsLtjMRq0fjsXZAfCJk029O9QSNlpAW4KvrPnwwqtwZDZD';
 
 function sendTextMessage(sender, text) {
-	let messageData = { text: text };
-	request({
-		url: 'https://graph.facebook.com/v2.6/me/messages',
-		qs: {access_token: token},
-		method: 'POST',
-		json: {
-			recipient: {id: sender},
-			message: messageData,
+	var messageData = {
+		recipient: {
+			id: sender
+		},
+		message: {
+			text: text
 		}
-	}, function(error, response, body) {
-		if (error) {
-			console.log('Error sending messages: ', error);
-		} else if (response.body.error) {
-			console.log('Error: ', response.body.error);
+	};
+
+	callSendAPI(messageData);
+}
+
+function receivedMessage(event) {
+	var senderID = event.sender.id;
+	var recipientID = event.recipient.id;
+	var timeOfMessage = event.timestamp;
+	var message = event.message;
+
+	console.log("Received message for user %d and page %d at %d with message:", senderID, recipientID, timeOfMessage);
+	console.log(JSON.stringify(message));
+
+	var messageId = message.mid;
+	var appId = message.app_id;
+	var metadata = message.metadata;
+
+	var messageText = message.text;
+	var messageAttachments = message.attachments;
+	var isEcho = message.is_echo;
+	var quickReply = message.quick_reply;
+
+	if (isEcho) {
+		console.log("Received echo for message %s and app %d with metadata %s", messageId, appId, metadata);
+		return;
+	}
+	else if (quickReply) {
+		var quickReplyPayload = quickReply.payload;
+		console.log("Quick reply for message %s with payload %s", messageId, quickReplyPayload);
+
+		sendTextMessage(senderID, "Quick reply tapped");
+		return;
+	}
+	if (messageText) {
+		sendTextMessage(senderID, messageText);
+	}
+	else if (messageAttachments) {
+		sendTextMessage(senderID, "Message with attachment received");
+	}
+}
+
+function callSendAPI(messageData) {
+	request({
+		uri: 'https://graph.facebook.com/v2.6/me/messages/',
+		qs: { access_token: token },
+		method: 'POST',
+		json: messageData
+	}, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			var recipientId = body.recipient_id;
+			var messageId = body.message_id;
+
+			if (messageId) {
+				console.log("Successfully sent message with id %s to recipient %s", messageId, recipientId);
+			} else {
+				console.log("Successfully called Send API for recipient %s", recipientId);
+			}
+		} else {
+			console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
 		}
 	});
 }
-
-
 
 
 
@@ -64,3 +123,4 @@ app.listen(app.get('port'), function() {
 	console.log('running on port', app.get('port'));
 });
 
+module.exports = app;
