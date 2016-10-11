@@ -3,6 +3,13 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
 const app = express();
+const recast = require('recastai');
+const config = require('./config');
+const urls = require('./urls');
+
+const greeting = require('./intents/greetings');
+
+const recastClient = new recast.Client(config.recast_token);
 
 app.set('port', (process.env.PORT || 8080));
 
@@ -11,7 +18,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.get('/', function( req, res) {
-	res.send('Hello world, I am a chat bot');
+	res.send('Official Page for the chatbot Alfred');
 });
 
 app.get('/webhook/', function (req, res) {
@@ -42,7 +49,7 @@ app.post('/webhook/', function(req, res) {
 		res.sendStatus(200);
 	}
 });
-const token = 'EAAZAxJnnArZAMBACyWFARPnpnB9xom3aKuaLTZCFuJMyCMVHZC806wCZCz7VXse8JqIAlUH5NYOZBtleV6gZBK4WIrd6MPO3eXFIkG2JZCUDeOF0o3TvJjZAiGjOxscxK54OEUp7HgV3qNZAbUikYyV20qZAfM7LPLlo5bP46A04Q0E8gZDZD';
+//const token = 'EAAZAxJnnArZAMBANy7ZAC0ZA8FYAIZAMwBM5N13RLe8udAJqjmGJ5qCUhZA5Q8PlzA3szVSGmZBePxyZBUAAhyNSzOuB0PlOlJLhOSHGm8EBvpCBEZAh6akyhduva0VoZCX0sTLUdm7ZAoQhoe8TGHZAkpc6ZAFMZB8YNRgjbEMmQvozbq6AZDZD';
 
 function sendTextMessage(sender, text) {
 	var messageData = {
@@ -56,6 +63,67 @@ function sendTextMessage(sender, text) {
 
 	callSendAPI(messageData);
 }
+
+function sendImageMessage(sender, image_url) {
+	var messageData = {
+    recipient: {
+      id: sender
+    },
+    message: {
+      attachment: {
+        type: "image",
+        payload: {
+          url: image_url
+        }
+      }
+    }
+  };
+
+  callSendAPI(messageData);
+
+}
+
+function sendToRecast(sender, message) {
+	//console.log("got here");
+	var custom_url = urls.get_user_info_url + "/" + sender + "?access_token=" + config.token;
+	var user_details;
+	request(custom_url, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			user_details = body;
+			console.log(body.first_name);
+		}
+		else {
+			console.error("Failed calling get API", response.statusCode, response.statusMessage, body.error);
+		}
+	});
+	//var user_details_params = {'fields': 'first_name, last_name, profile_pic', 'access_token': config.token };
+	//var user_details = request.get(urls.user_details_url+sender, user_details_params).json();
+	//recastClient.textRequest(message).then(function(res) {
+		//var intent = res.intent();
+
+	//	var message_to_send = '';
+		//switch (num) {
+			//case 'greeting':
+	//			sendTextMessage(sender,greeting.getGreeting(user_details.first_name));
+				//break;
+			//case 'tellweather':
+			//	sendTextMessage(sender, "working on that " + user_details['first_name']);
+			//	break;
+			//case 'appreciationintent':
+		//		sendTextMessage(sender, "It's my job " + user_details['first_name']);
+		//		break;
+		//	default:
+		//		sendTextMessage(sender, "Didn't really get that " + user_details['first_name'] + ". Could you try something else?");
+		//}
+		//sendTextMessage(sender, message_to_send);
+	//}).catch(function(e) {
+	//	console.log(e);
+	//});
+}
+
+
+
+
 
 function receivedMessage(event) {
 	var senderID = event.sender.id;
@@ -87,17 +155,26 @@ function receivedMessage(event) {
 		return;
 	}
 	if (messageText) {
-		sendTextMessage(senderID, messageText);
+		sendToRecast(senderID, messageText);
+		//sendTextMessage(senderID, messageText);
 	}
 	else if (messageAttachments) {
-		sendTextMessage(senderID, "Message with attachment received");
+		//sendTextMessage(senderID, "Message with attachment received");
+		//console.log(JSON.stringify(messageAttachments));
+		messageAttachments.forEach(function(attachment) {
+			console.log("The message type is: " + attachment.type);
+			if (attachment.type == 'image') {
+				console.log("The attachment url is : " + attachment.payload.url);
+				sendImageMessage(senderID, attachment.payload.url);
+			}
+		});
 	}
 }
 
 function callSendAPI(messageData) {
 	request({
-		uri: 'https://graph.facebook.com/v2.6/me/messages/',
-		qs: { access_token: token },
+		uri: urls.post_message_url,
+		qs: { access_token: config.token },
 		method: 'POST',
 		json: messageData
 	}, function (error, response, body) {
