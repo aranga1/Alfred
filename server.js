@@ -94,9 +94,10 @@ function sendToRecast(sender, message) {
 		}
 	});
 	client.textRequest(message).then((res) => {
-		var intent = res.intent().slug;
 		var message_to_send = '';
-		switch (intent) {
+		if (res.intent() != null) {
+			var intent = res.intent().slug;
+			switch (intent) {
 			case 'greeting':
 				sendTextMessage(sender,greeting.getGreetings(user_details.first_name));
 				break;
@@ -108,7 +109,12 @@ function sendToRecast(sender, message) {
 				break;
 			default:
 				sendTextMessage(sender, "Didn't really get that " + user_details['first_name'] + ". Could you try something else?");
+			}
 		}
+		else {
+			sendTextMessage(sender, "Didn't really get that " + user_details['first_name'] + ". Could you try something else?");
+		}
+		
 	}).catch(e => {
 		console.log(e);
 	});
