@@ -8,6 +8,7 @@ module.exports = {
 			'Hello ' + sender_name,
 			'Why hello there ' + sender_name,
 			'Hello ' + sender_name + ' Hope the day is going well for you!',
+			'And a good day to you too ' + sender_name,
 		]
 		return random(answers);
 	},

@@ -11,15 +11,6 @@ const greeting = require('./intents/greetings');
 
 const client = new recast.Client(config.recast_token, 'en');
 
-client.textRequest("Hello!").then((res) => {
-	let intent = res.intent();
-	console.log(intent);
-}).catch(err => {
-	console.log(err);
-});
-
-
-
 app.set('port', (process.env.PORT || 8080));
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -40,7 +31,7 @@ app.get('/webhook/', function (req, res) {
 app.post('/webhook/', function(req, res) {
 	console.log("Came to post From facebook");
 
-	/*var data = req.body;
+	var data = req.body;
 
 	if (data.object == 'page') {
 		data.entry.forEach(function(pageEntry) {
@@ -56,7 +47,7 @@ app.post('/webhook/', function(req, res) {
 			});
 		});
 		res.sendStatus(200);
-	}*/
+	}
 });
 //const token = 'EAAZAxJnnArZAMBANy7ZAC0ZA8FYAIZAMwBM5N13RLe8udAJqjmGJ5qCUhZA5Q8PlzA3szVSGmZBePxyZBUAAhyNSzOuB0PlOlJLhOSHGm8EBvpCBEZAh6akyhduva0VoZCX0sTLUdm7ZAoQhoe8TGHZAkpc6ZAFMZB8YNRgjbEMmQvozbq6AZDZD';
 
@@ -93,12 +84,12 @@ function sendImageMessage(sender, image_url) {
 }
 
 function sendToRecast(sender, message) {
-	console.log("got here");
+	//console.log("got here");
 	var custom_url = urls.get_user_info_url + "/" + sender + "?access_token=" + config.token;
 	var user_details;
 	request(custom_url, function (error, response, body) {
 		if (!error && response.statusCode == 200) {
-			user_details = body;
+			//user_details = body;
 			user_details = JSON.parse(body);
 		}
 		else {
@@ -108,23 +99,21 @@ function sendToRecast(sender, message) {
 	//var user_details_params = {'fields': 'first_name, last_name, profile_pic', 'access_token': config.token };
 	//var user_details = request.get(urls.user_details_url+sender, user_details_params).json();
 	client.textRequest(message).then((res) => {
-		var intent = res.intent();
-
-	//	var message_to_send = '';
-		//switch (num) {
-			//case 'greeting':
-	//			sendTextMessage(sender,greeting.getGreeting(user_details.first_name));
-				//break;
-			//case 'tellweather':
-			//	sendTextMessage(sender, "working on that " + user_details['first_name']);
-			//	break;
-			//case 'appreciationintent':
-		//		sendTextMessage(sender, "It's my job " + user_details['first_name']);
-		//		break;
-		//	default:
-		//		sendTextMessage(sender, "Didn't really get that " + user_details['first_name'] + ". Could you try something else?");
-		//}
-		//sendTextMessage(sender, message_to_send);
+		var intent = res.intent().slug;
+		var message_to_send = '';
+		switch (intent) {
+			case 'greeting':
+				sendTextMessage(sender,greeting.getGreetings(user_details.first_name));
+				break;
+			case 'tellweather':
+				sendTextMessage(sender, "working on that " + user_details['first_name']);
+				break;
+			case 'appreciationintent':
+				sendTextMessage(sender, "It's my job " + user_details['first_name']);
+				break;
+			default:
+				sendTextMessage(sender, "Didn't really get that " + user_details['first_name'] + ". Could you try something else?");
+		}
 	}).catch(e => {
 		console.log(e);
 	});
