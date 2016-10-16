@@ -49,7 +49,6 @@ app.post('/webhook/', function(req, res) {
 		res.sendStatus(200);
 	}
 });
-//const token = 'EAAZAxJnnArZAMBANy7ZAC0ZA8FYAIZAMwBM5N13RLe8udAJqjmGJ5qCUhZA5Q8PlzA3szVSGmZBePxyZBUAAhyNSzOuB0PlOlJLhOSHGm8EBvpCBEZAh6akyhduva0VoZCX0sTLUdm7ZAoQhoe8TGHZAkpc6ZAFMZB8YNRgjbEMmQvozbq6AZDZD';
 
 function sendTextMessage(sender, text) {
 	var messageData = {
@@ -84,20 +83,16 @@ function sendImageMessage(sender, image_url) {
 }
 
 function sendToRecast(sender, message) {
-	//console.log("got here");
 	var custom_url = urls.get_user_info_url + "/" + sender + "?access_token=" + config.token;
 	var user_details;
 	request(custom_url, function (error, response, body) {
 		if (!error && response.statusCode == 200) {
-			//user_details = body;
 			user_details = JSON.parse(body);
 		}
 		else {
 			console.error("Failed calling get API", response.statusCode, response.statusMessage, body.error);
 		}
 	});
-	//var user_details_params = {'fields': 'first_name, last_name, profile_pic', 'access_token': config.token };
-	//var user_details = request.get(urls.user_details_url+sender, user_details_params).json();
 	client.textRequest(message).then((res) => {
 		var intent = res.intent().slug;
 		var message_to_send = '';
@@ -154,11 +149,8 @@ function receivedMessage(event) {
 	}
 	if (messageText) {
 		sendToRecast(senderID, messageText);
-		//sendTextMessage(senderID, messageText);
 	}
 	else if (messageAttachments) {
-		//sendTextMessage(senderID, "Message with attachment received");
-		//console.log(JSON.stringify(messageAttachments));
 		messageAttachments.forEach(function(attachment) {
 			console.log("The message type is: " + attachment.type);
 			if (attachment.type == 'image') {
