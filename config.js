@@ -1,0 +1,8 @@
+const config = {
+	appid: '1813259925630355',
+	secret: 'b775c5b05dc4458dac8788ec47cb7772',
+	token: 'EAAZAxJnnArZAMBABnZBMEturM881RS3JNl2i1VaaUgJGda9DZBbLs9Xfw3TeDNo69BRSNwqZAL9dMQRxmMkIAkaESCPuC6KFPZBB0QGOH3T8dCYSOxZCNBzn26iMA4v6NefWmTNAigKHz3EEVmOqVE3JzBjqFe2MZCgTTMXUxTibYwZDZD',
+	recast_token: '1f4ae8a746878df6679216a256212ac3',
+}
+
+module.exports = config;
